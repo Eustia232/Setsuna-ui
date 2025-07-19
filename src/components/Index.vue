@@ -1,12 +1,9 @@
 <template>
   <div class="background">
-    <Transition name="fade" mode="out-in">
-      <Login v-if="showLogin" @switch=changeComponent />
-      <Register v-else-if="!showLogin" @switch=changeComponent />
-    </Transition>
-
-    <Transition name="fade">
-
+    <Transition mode="out-in" name="fade">
+      <KeepAlive>
+        <component :is="view" @switch="changeComponent"/>
+      </KeepAlive>
     </Transition>
 
   </div>
@@ -14,13 +11,12 @@
 
 <script setup>
 import Login from "@/components/index/Login.vue";
-import Register from "@/components/index/Register.vue";
 import {ref} from "vue";
 
-const showLogin = ref(true);
+const view = ref( Login );
 
-function changeComponent(){
-  showLogin.value = !showLogin.value;
+function changeComponent( component ) {
+  view.value = component;
 }
 
 </script>
@@ -42,14 +38,17 @@ function changeComponent(){
 .fade-enter-active, .fade-leave-active {
   transition: all 0.3s ease-in;
 }
-.fade-enter-from{
+
+.fade-enter-from {
   opacity: 0;
   transform: translateX(60px) scale(1.2);
 }
+
 .fade-enter-to, .fade-leave-from {
   opacity: 1;
   transform: translateX(0) scale(1.2);
 }
+
 .fade-leave-to {
   opacity: 0;
   transform: translateX(-60px) scale(1.2);

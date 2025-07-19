@@ -4,14 +4,14 @@
   >
     <el-text class="login-title">欢迎访问雪菜小站</el-text>
     <el-form-item label="用户名" prop="username">
-      <el-input class="el-input" v-model.number="loginFormData.username" clearable/>
+      <el-input v-model.number="loginFormData.username" class="el-input" clearable/>
     </el-form-item>
     <el-form-item label="密码" prop="password">
       <el-input v-model="loginFormData.password" clearable show-password/>
     </el-form-item>
     <div class="login-button-container">
-      <el-button type="primary" class="login-button">登录</el-button>
-      <el-button type="primary" class="login-button" @click="$emit('switch')">注册</el-button>
+      <el-button class="login-button" type="primary" @click="submitForm">登录</el-button>
+      <el-button class="login-button" type="primary" @click="$emit('switch',Register)">注册</el-button>
     </div>
   </el-form>
 </template>
@@ -20,13 +20,15 @@
 import {ref, useTemplateRef} from "vue";
 import {login} from "@/api/auth.js";
 import router from "@/router/index.js";
+import Register from "@/components/index/Register.vue";
+import handleResponse from "@/utils/handleResponse.js";
 
-const loginFormRef = useTemplateRef("index-form");
-const loginFormData = ref({
-  username: "eustia",
-  password: "eustia",
-});
-const rules = ref({
+const loginFormRef = useTemplateRef( "index-form" );
+const loginFormData = ref( {
+  username: "eva",
+  password: "123",
+} );
+const rules = ref( {
   username: [
     {
       required: true,
@@ -39,26 +41,21 @@ const rules = ref({
       message: "密码不能为空",
       trigger: "blur",
     }],
-});
-// const checkLoginForm = () => {
-//   loginFormRef.value.validate(valid => {
-//     if (valid) {
-//       login2(loginFormData.value.username, loginFormData.value.password).then(response => {
-//         console.log(response);
-//       })
-//     }
-//   });
-const checkLoginForm = () => {
-  loginFormRef.value.validate(valid => {
+} );
+const submitForm = () => {
+  loginFormRef.value.validate( valid => {
     if (valid) {
-      if (login(loginFormData.value.username, loginFormData.value.password)) {
-        router.push("/home");
+      const payload = {
+        username: loginFormData.value.username,
+        password: loginFormData.value.password,
       }
-      else {
-        alert(222);
-      }
+      handleResponse( login( payload ) ).then( _ => {
+        setTimeout( () => {
+          router.push( "/home" );
+        }, 300 );
+      } );
     }
-  });
+  } );
 };
 
 </script>
@@ -89,14 +86,13 @@ const checkLoginForm = () => {
   align-items: center;
 }
 
-.login-button{
+.login-button {
   margin: 0 30px;
 }
 
-.el-input{
+.el-input {
   margin-right: 25px;
 }
-
 
 
 </style>

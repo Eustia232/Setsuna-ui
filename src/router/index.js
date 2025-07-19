@@ -15,8 +15,8 @@ const routes = [
         path: "/",
         redirect: "/index",
     }];
-const router = createRouter({
+const router = createRouter( {
     history: createWebHistory(),
     routes,
-});
+} );
 export default router;

@@ -4,7 +4,7 @@
   >
     <el-text class="login-title">欢迎注册账号</el-text>
     <el-form-item label="用户名" prop="username">
-      <el-input class="el-input" v-model.number="loginFormData.username" clearable/>
+      <el-input v-model.number="loginFormData.username" class="el-input" clearable/>
     </el-form-item>
     <el-form-item label="密码" prop="password">
       <el-input v-model="loginFormData.password" clearable show-password/>
@@ -13,33 +13,37 @@
       <el-input v-model="loginFormData.confirmPassword" clearable show-password/>
     </el-form-item>
     <div class="login-button-container">
-      <el-button type="primary" class="login-button" @click=submitForm>注册</el-button>
+      <el-button class="login-button" type="primary" @click=submitForm>注册</el-button>
+      <el-button class="login-button" type="primary" @click="$emit('switch',Login)">返回</el-button>
     </div>
   </el-form>
 </template>
 
 <script setup>
-import {reactive, ref, useTemplateRef} from "vue";
-import {login, register} from "@/api/auth.js";
-import router from "@/router/index.js";
+import {ref, useTemplateRef} from "vue";
+import {register} from "@/api/auth.js";
+import Login from "@/components/index/Login.vue";
+import handleResponse from "@/utils/handleResponse.js";
 
-const loginFormRef = useTemplateRef("index-form");
-const loginFormData = ref({
-  username: Math.random().toString(36).slice(2, 12), //TODO 要删去
+const loginFormRef = useTemplateRef( "index-form" );
+const loginFormData = ref( {
+  username: Math.random().toString( 36 ).slice( 2, 12 ), //TODO 要删去
   password: "eustia",
   confirmPassword: "eustia",
-});
+} );
+const emit = defineEmits( ["switch"] );
 
-const equalToPassword=(rule, value, callback) => {
+function equalToPassword( _, value, callback ) {
   if (value !== loginFormData.value.password) {
-    callback(new Error("两次密码不一致"));
+    callback( new Error( "两次密码不一致" ) );
   }
-  else{
+  else {
     callback();
   }
 }
+
 //校验表单内容
-const rules = ref({
+const rules = ref( {
   username: [
     {
       required: true,
@@ -57,27 +61,28 @@ const rules = ref({
       required: true,
       message: "密码不能为空",
       trigger: "blur",
-    },{
+    },
+    {
       validator: equalToPassword,
       trigger: "blur",
     }],
-});
+} );
 
-const submitForm = ()=>{
-  loginFormRef.value.validate(valid => {
+function submitForm() {
+  loginFormRef.value.validate( valid => {
     if (valid) {
       const payload = {
         username: loginFormData.value.username,
         password: loginFormData.value.password,
-      }
-      register(payload).then(response => {
-        alert(response.message)
-        console.log(response.message)
-      }).catch(error => {
-        alert(error.message)
-      })
+      };
+      handleResponse( register( payload ) ).then( _ => {
+        setTimeout( () => {
+          emit( "switch", Login );
+        }, 750 );
+      } ).catch( _ => {
+      } );
     }
-  })
+  } );
 }
 
 </script>
@@ -108,14 +113,13 @@ const submitForm = ()=>{
   align-items: center;
 }
 
-.login-button{
+.login-button {
   margin: 0 30px;
 }
 
-.el-input{
+.el-input {
   margin-right: 25px;
 }
-
 
 
 </style>
