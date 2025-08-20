@@ -1,17 +1,45 @@
 <template>
   <el-container class="home-container">
-    <el-header class="header">header</el-header>
+    <el-header class="header">
+      <button @click="logout"></button>
+    </el-header>
     <el-container>
-      <el-aside class="aside">aside</el-aside>
+      <el-aside class="aside" width="200px">
+        <el-menu background-color="#e6eddf" default-active="/hobby" router>
+          <el-menu-item index="/hobby">主页</el-menu-item>
+          <el-menu-item index="/test">测试页</el-menu-item>
+        </el-menu>
+      </el-aside>
       <el-main class="main">
-        <Index/>
-        <Index/>
+        <RouterView></RouterView>
       </el-main>
     </el-container>
   </el-container>
 </template>
 <script setup>
-import Index from "@/components/Index.vue";
+
+import {onMounted, ref} from "vue";
+import {getInfo} from "@/api/auth.js";
+import {clearToken} from "@/utils/token.js";
+import router from "@/router/index.js";
+
+const hobby = ref( "" );
+
+function getHobby() {
+  getInfo().then( res => {
+    hobby.value = res.hobby;
+  } ).catch( _ => {
+  } );
+}
+
+function logout() {
+  clearToken();
+  router.push( "/index" );
+}
+
+onMounted( () => {
+  getHobby();
+} );
 </script>
 
 <style scoped>
@@ -20,14 +48,17 @@ import Index from "@/components/Index.vue";
 }
 
 .header {
-  background-color: #2136bd;
+  background-color: beige;
+  box-shadow: var(--el-box-shadow-light);
 }
 
 .aside {
-  background-color: #c35757;
+  background-color: #e6eddf;
 }
 
-.main {
-  background-color: #4f7822;
+.aside {
+  background-color: #f6f4f6;
 }
+
+
 </style>

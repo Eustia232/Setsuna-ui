@@ -23,7 +23,6 @@
 import {ref, useTemplateRef} from "vue";
 import {register} from "@/api/auth.js";
 import Login from "@/components/index/Login.vue";
-import handleResponse from "@/utils/handleResponse.js";
 
 const loginFormRef = useTemplateRef( "index-form" );
 const loginFormData = ref( {
@@ -75,12 +74,7 @@ function submitForm() {
         username: loginFormData.value.username,
         password: loginFormData.value.password,
       };
-      handleResponse( register( payload ) ).then( _ => {
-        setTimeout( () => {
-          emit( "switch", Login );
-        }, 750 );
-      } ).catch( _ => {
-      } );
+      register( payload );
     }
   } );
 }

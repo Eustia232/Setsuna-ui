@@ -13,21 +13,32 @@
       <el-button class="login-button" type="primary" @click="submitForm">登录</el-button>
       <el-button class="login-button" type="primary" @click="$emit('switch',Register)">注册</el-button>
     </div>
+    <div class="oauth-login-divider">
+      <span>其他方式登录</span>
+    </div>
+    <div class="oauth-login-icons">
+      <!--suppress JSValidateTypes -->
+      <el-avatar :size="32" :src="githubLogo" @click="githubClick"/>
+      <el-avatar :size="32" :src="githubLogo" @click="githubClick2"/>
+    </div>
   </el-form>
 </template>
 
 <script setup>
 import {ref, useTemplateRef} from "vue";
-import {login} from "@/api/auth.js";
+import {login, loginWithGithub} from "@/api/auth.js";
 import router from "@/router/index.js";
 import Register from "@/components/index/Register.vue";
-import handleResponse from "@/utils/handleResponse.js";
+import {setToken} from "@/utils/token.js";
+import githubLogo from "@/assets/images/github.png";
+import {ElMessage} from "element-plus";
 
 const loginFormRef = useTemplateRef( "index-form" );
 const loginFormData = ref( {
   username: "eva",
   password: "123",
 } );
+console.log( "github_logo:", githubLogo );
 const rules = ref( {
   username: [
     {
@@ -48,13 +59,45 @@ const submitForm = () => {
       const payload = {
         username: loginFormData.value.username,
         password: loginFormData.value.password,
-      }
-      handleResponse( login( payload ) ).then( _ => {
-        setTimeout( () => {
-          router.push( "/home" );
-        }, 300 );
+      };
+      login( payload ).then( res => {
+        console.log( res );
+        setToken( res.token );
+        router.push( {name: "Home"} );
+      } ).catch( _ => {
       } );
     }
+  } );
+};
+const githubClick = () => {
+  console.log( "githubClick" );
+  loginWithGithub().then( res => {
+    console.log( res );
+    const {token} = res;
+    setToken( token );
+    router.push( {name: "Home"} );
+  } ).catch( _ => {
+  } );
+};
+const githubClick2 = () => {
+  const popup = window.open( "http://localhost:8080/oauth2/authorization/github", "githubLogin", "width=600,height=600" );
+  // 监听弹窗回传的消息
+  window.addEventListener( "message", function handler( event ) {
+    // 安全校验
+    if (event.origin !== "http://localhost:8080") {
+      return;
+    }
+    console.log( event );
+    const {
+      token,
+      firstLogin,
+    } = event.data;
+    setToken( token );
+    if (firstLogin) {
+      ElMessage.primary( "您是第一次登录，已为您自动创建账号" );
+    }
+    router.push( {name: "Home"} );
+    window.removeEventListener( "message", handler );
   } );
 };
 
@@ -92,6 +135,31 @@ const submitForm = () => {
 
 .el-input {
   margin-right: 25px;
+}
+
+.oauth-login-divider {
+  display: flex;
+  align-items: center;
+  margin: 8px 0 8px 0;
+  color: #606266;
+  font-size: 15px;
+}
+
+/*用伪类实现分割线效果*/
+.oauth-login-divider::before,
+.oauth-login-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #e5e6eb;
+  margin: 0 12px;
+}
+
+.oauth-login-icons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 16px;
 }
 
 

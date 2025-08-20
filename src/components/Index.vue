@@ -11,9 +11,9 @@
 
 <script setup>
 import Login from "@/components/index/Login.vue";
-import {ref} from "vue";
+import {shallowRef} from "vue";
 
-const view = ref( Login );
+const view = shallowRef( Login );
 
 function changeComponent( component ) {
   view.value = component;
